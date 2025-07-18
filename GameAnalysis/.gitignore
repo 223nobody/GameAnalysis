@@ -1,5 +1,6 @@
 # Python 缓存文件
 __pycache__/
+*/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -38,13 +39,6 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-# 环境变量文件
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 
 # IDE 文件
 .vscode/
@@ -61,13 +55,6 @@ venv.bak/
 .Trashes
 ehthumbs.db
 Thumbs.db
-
-# 项目特定文件
-*.sqlite
-*.sqlite3
-logs/
-temp/
-tmp/
 
 # FastAPI 特定
 .pytest_cache/

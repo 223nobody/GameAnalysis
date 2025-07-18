@@ -1,0 +1,198 @@
+/* 品牌标题区域 */
+.brand-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+  background: white;
+  transition: all 0.4s ease;
+  position: fixed;
+  width: 100%;
+  z-index: 999;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 滚动后标题折叠 */
+.brand-header.collapsed {
+  height: 0;
+  opacity: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.brand-title {
+  font-size: 1.8rem;
+  font-weight: 400;
+  margin-top: 15px;
+  color: #000;
+  left: 18px;
+  position: relative;
+}
+
+/* 导航栏样式 */
+.navbar {
+  position: fixed;
+  top: 60px;
+  height: 60px;
+  width: 100%;
+  background: white;
+  transition: all 0.4s ease;
+  z-index: 1000;
+}
+
+.navbar.scrolled {
+  top: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.nav-link1 {
+  text-decoration: underline;
+  text-decoration-skip-ink: "auto";
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 500;
+  position: relative;
+  padding: 5px 0;
+  transition: color 0.3s ease;
+}
+/* 导航链接样式 */
+.nav-link {
+  text-decoration: none;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 500;
+  position: relative;
+  padding: 5px 0;
+  transition: all 0.3s ease; /* 添加all过渡效果 */
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+  text-decoration-skip-ink: auto;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .brand-title {
+    font-size: 1.5rem;
+  }
+  .navbar.scrolled {
+    top: 0;
+  }
+}
+@media (max-width: 480px) {
+  .brand-title {
+    font-size: 1.5rem;
+  }
+}
+
+.purchase-span {
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+.purchase-link {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.purchase-red {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #e74c3c;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upline {
+  font-size: 28px;
+  font-weight: bold;
+}
+.downline {
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  font-size: 20px;
+}
+
+.copyright {
+  margin-top: 30px;
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.herfstyle {
+  color: #ffb408;
+  text-decoration: underline;
+  text-decoration-skip-ink: auto;
+  font-weight: 500;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.iconstyle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  transition: all 0.3s ease;
+}
+
+.iconstyle:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.image-card {
+  max-width: 570px;
+  max-height: 800px;
+  height: 100%;
+  background: white;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.image-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+}
+
+.image-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.image-container:hover img {
+  transform: scale(1.08);
+}
+
+.herfstyle1 {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+  text-align: center;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-skip-ink: auto;
+}
