@@ -1,7 +1,4 @@
-"""
-题目管理和统计的操作控制器。
-处理CRUD操作和数据检索。
-"""
+
 
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Query

@@ -1,500 +1,602 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // 初始化所有图表
-    const charts = {
-        salary: echarts.init(document.getElementById('salaryChart')),
-        sankey: echarts.init(document.getElementById('sankeyChart')),
-        heatmap: echarts.init(document.getElementById('heatmapChart')),
-        education: echarts.init(document.getElementById('educationChart')),
-        positionType: echarts.init(document.getElementById('positionTypeChart')),
-        industry: echarts.init(document.getElementById('industryChart')),
-        location: echarts.init(document.getElementById('locationChart'))
-    };
+document.addEventListener("DOMContentLoaded", function () {
+  // 初始化所有图表
+  const charts = {
+    killWinRate: echarts.init(document.getElementById("killWinRateChart")),
+    assistWinRate: echarts.init(document.getElementById("assistWinRateChart")),
+    vehicleDistance: echarts.init(
+      document.getElementById("vehicleDistanceChart")
+    ),
+    partySizeKills: echarts.init(
+      document.getElementById("partySizeKillsChart")
+    ),
+    killDistance: echarts.init(document.getElementById("killDistanceChart")),
+    weaponKills: echarts.init(document.getElementById("weaponKillsChart")),
+    weaponDistance: echarts.init(
+      document.getElementById("weaponDistanceChart")
+    ),
+    interactiveWeapon: echarts.init(
+      document.getElementById("interactiveWeaponChart")
+    ),
+  };
 
-    // 通用配置
-    const commonOptions = {
-        backgroundColor: 'transparent',
+  // 通用配置
+  const commonOptions = {
+    backgroundColor: "transparent",
+    textStyle: {
+      color: "#e0e0e0",
+      fontSize: 14,
+    },
+    title: {
+      textStyle: {
+        color: "#ffffff",
+        fontWeight: "bold",
+        fontSize: 18,
+      },
+    },
+    tooltip: {
+      backgroundColor: "rgba(20, 25, 35, 0.9)",
+      borderColor: "rgba(100, 120, 150, 0.4)",
+      textStyle: {
+        color: "#e0e0e0",
+        fontSize: 14,
+      },
+      padding: 10,
+    },
+    grid: {
+      containLabel: true,
+      left: "8%",
+      right: "8%",
+      bottom: "12%",
+      top: "18%",
+    },
+  };
+
+  // 错误处理函数
+  function handleError(chart, error) {
+    console.error("图表渲染失败:", error);
+    chart.setOption({
+      title: {
+        text: "数据加载失败",
+        left: "center",
+        top: "middle",
         textStyle: {
-            color: '#e0e0e0',
-            fontSize: 14
+          color: "#ff6b6b",
+          fontSize: 16,
         },
-        title: {
-            textStyle: {
-                color: '#ffffff',
-                fontWeight: 'bold',
-                fontSize: 18
-            }
-        },
-        tooltip: {
-            backgroundColor: 'rgba(20, 25, 35, 0.9)',
-            borderColor: 'rgba(100, 120, 150, 0.4)',
-            textStyle: {
-                color: '#e0e0e0',
-                fontSize: 14
-            },
-            padding: 10
-        },
-        grid: {
-            containLabel: true,
-            left: '8%',
-            right: '8%',
-            bottom: '12%',
-            top: '18%'
+      },
+    });
+  }
+
+  // 通用数据获取和图表设置函数
+  function fetchAndSetChart(chart, url, optionGenerator) {
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          throw new Error(data.error);
         }
-    };
+        const option = optionGenerator(data);
+        chart.setOption(option);
+      })
+      .catch((error) => handleError(chart, error));
+  }
 
-    // 错误处理函数
-    function handleError(chart, error) {
-        console.error('图表渲染失败:', error);
-        chart.setOption({
-            title: {
-                text: '数据加载失败',
-                subtext: '请检查网络连接或数据格式',
-                left: 'center',
-                textStyle: {
-                    color: '#ff6b6b',
-                    fontSize: 16
-                }
-            }
-        });
-    }
+  // 1. 击杀人数与吃鸡概率关系
+  fetchAndSetChart(charts.killWinRate, "/api/kill-win-rate", (data) => ({
+    ...commonOptions,
+    title: {
+      text: "击杀人数与吃鸡概率关系",
+      left: "center",
+    },
+    xAxis: {
+      type: "category",
+      data: data.map((item) => item.kills),
+      axisLabel: {
+        color: "#ccc",
+        fontSize: 12,
+      },
+    },
+    yAxis: {
+      type: "value",
+      name: "吃鸡概率",
+      axisLabel: {
+        color: "#ccc",
+        fontSize: 12,
+        formatter: "{value}%",
+      },
+    },
+    series: [
+      {
+        name: "吃鸡概率",
+        type: "bar",
+        data: data.map((item) => (item.win_rate * 100).toFixed(2)),
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#4ecdc4" },
+            { offset: 1, color: "#44a08d" },
+          ]),
+        },
+      },
+    ],
+  }));
 
-    // 封装数据获取和图表设置函数，添加重试机制
-    async function fetchAndSetChart(chart, apiUrl, optionGenerator, maxRetries = 3) {
-        let retries = 0;
-        while (retries < maxRetries) {
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('网络响应失败');
-                const data = await response.json();
-                console.log(`成功获取 ${apiUrl} 的数据:`, data);
-                chart.setOption(optionGenerator(data));
-                return;
-            } catch (error) {
-                retries++;
-                if (retries === maxRetries) {
-                    handleError(chart, error);
-                } else {
-                    console.log(`第 ${retries} 次重试请求 ${apiUrl}`);
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
-            }
-        }
-    }
+  // 2. 助攻次数与吃鸡概率关系
+  fetchAndSetChart(charts.assistWinRate, "/api/assist-win-rate", (data) => ({
+    ...commonOptions,
+    title: {
+      text: "助攻次数与吃鸡概率关系",
+      left: "center",
+    },
+    xAxis: {
+      type: "category",
+      data: data.map((item) => item.assists),
+      axisLabel: {
+        color: "#ccc",
+        fontSize: 12,
+      },
+    },
+    yAxis: {
+      type: "value",
+      name: "吃鸡概率",
+      axisLabel: {
+        color: "#ccc",
+        fontSize: 12,
+        formatter: "{value}%",
+      },
+    },
+    series: [
+      {
+        name: "吃鸡概率",
+        type: "bar",
+        data: data.map((item) => (item.win_rate * 100).toFixed(2)),
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "#667eea" },
+            { offset: 1, color: "#764ba2" },
+          ]),
+        },
+      },
+    ],
+  }));
 
-    // 1. 城市薪资水平对比（箱线图）
-    fetchAndSetChart(charts.salary, '/api/salary_comparison', (data) => ({
-        ...commonOptions,
-        title: {
-            text: '城市薪资水平对比',
-            subtext: '单位：元/月',
-            left: 'center'
+  // 3. 搭乘车辆里程与吃鸡概率
+  fetchAndSetChart(
+    charts.vehicleDistance,
+    "/api/vehicle-distance-win",
+    (data) => ({
+      ...commonOptions,
+      title: {
+        text: "搭乘车辆里程与吃鸡概率",
+        left: "center",
+      },
+      xAxis: {
+        type: "category",
+        data: data.map((item) => item.distance_range),
+        axisLabel: {
+          color: "#ccc",
+          fontSize: 12,
+          rotate: 45,
         },
-        xAxis: {
-            type: 'category',
-            data: data.map(item => item.city),
-            axisLabel: {
-                rotate: 45,
-                color: '#ccc',
-                fontSize: 14
-            }
+      },
+      yAxis: {
+        type: "value",
+        name: "吃鸡概率",
+        axisLabel: {
+          color: "#ccc",
+          fontSize: 12,
+          formatter: "{value}%",
         },
-        yAxis: {
-            type: 'value',
-            name: '月薪(元)',
-            axisLabel: {
-                color: '#ccc',
-                fontSize: 14
-            }
-        },
-        series: [{
-            name: '薪资分布',
-            type: 'boxplot',
-            data: data.map(item => [
-                item.min, item.q1, item.median, item.q3, item.max
+      },
+      series: [
+        {
+          name: "吃鸡概率",
+          type: "bar",
+          data: data.map((item) => (item.win_rate * 100).toFixed(2)),
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: "#ff6b6b" },
+              { offset: 1, color: "#ee5a24" },
             ]),
-            itemStyle: {
-                color: '#3a6ff8'
-            }
-        }]
-    }));
+          },
+        },
+      ],
+    })
+  );
 
-    // 2. 城市→职位类型→行业关联（桑基图）
-    fetchAndSetChart(charts.sankey, '/api/job_type_flow', (data) => ({
-        ...commonOptions,
-        title: {
-            text: '城市→职位类型→行业关联',
-            left: 'center'
+  // 4. 击杀距离分布
+  fetchAndSetChart(charts.killDistance, "/api/kill-distance", (data) => ({
+    ...commonOptions,
+    title: {
+      text: "击杀距离分布 (<400米)",
+      left: "center",
+    },
+    xAxis: {
+      type: "value",
+      name: "击杀距离 (米)",
+      axisLabel: {
+        color: "#ccc",
+        fontSize: 12,
+      },
+    },
+    yAxis: {
+      type: "value",
+      name: "频次",
+      axisLabel: {
+        color: "#ccc",
+        fontSize: 12,
+      },
+    },
+    series: [
+      {
+        name: "击杀频次",
+        type: "line",
+        data: data.map((item) => [item.distance, item.count]),
+        smooth: true,
+        lineStyle: {
+          color: "#45b7d1",
+          width: 3,
         },
-        series: [{
-            type: 'sankey',
-            layout: 'none',
-            data: data.nodes,
-            links: data.links,
-            categories: data.categories,
-            roam: true,
-            label: {
-                show: true,
-                color: '#ccc',
-                fontSize: 14
-            },
-            lineStyle: {
-                curveness: 0.3,
-                color: 'gradient',
-                opacity: 0.6
-            }
-        }]
-    }));
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: "rgba(69, 183, 209, 0.6)" },
+            { offset: 1, color: "rgba(69, 183, 209, 0.1)" },
+          ]),
+        },
+      },
+    ],
+  }));
 
-    // 3. 企业规模与经验（热力图）
-    fetchAndSetChart(charts.heatmap, '/api/cosize_worktime', (data) => ({
-        ...commonOptions,
-        title: {
-            text: '企业规模与工作经验要求',
-            left: 'center'
+  // 5. 武器击杀统计对比
+  fetchAndSetChart(charts.weaponKills, "/api/weapon-kills", (data) => ({
+    ...commonOptions,
+    title: {
+      text: "武器击杀统计对比",
+      left: "center",
+    },
+    legend: {
+      data: ["Erangel", "Miramar"],
+      textStyle: {
+        color: "#ccc",
+      },
+      top: "10%",
+    },
+    xAxis: {
+      type: "category",
+      data: data.erangel.map((item) => item.weapon),
+      axisLabel: {
+        color: "#ccc",
+        fontSize: 10,
+        rotate: 45,
+      },
+    },
+    yAxis: {
+      type: "value",
+      name: "击杀数",
+      axisLabel: {
+        color: "#ccc",
+        fontSize: 12,
+      },
+    },
+    series: [
+      {
+        name: "Erangel",
+        type: "bar",
+        data: data.erangel.map((item) => item.kills),
+        itemStyle: {
+          color: "#4ecdc4",
         },
-        xAxis: {
-            type: 'category',
-            data: data.categories.exp,
-            splitArea: {
-                show: true,
-                areaStyle: {
-                    color: 'rgba(255,255,255,0.05)'
-                }
-            },
-            axisLabel: {
-                color: '#ccc',
-                fontSize: 14
-            }
+      },
+      {
+        name: "Miramar",
+        type: "bar",
+        data: data.miramar.map((item) => item.kills),
+        itemStyle: {
+          color: "#ff6b6b",
         },
-        yAxis: {
-            type: 'category',
-            data: data.categories.size,
-            splitArea: {
-                show: true,
-                areaStyle: {
-                    color: 'rgba(255,255,255,0.05)'
-                }
-            },
-            axisLabel: {
-                color: '#ccc',
-                fontSize: 14
-            }
-        },
-        visualMap: {
-            min: 0,
-            max: Math.max(...data.data.flatMap(d => d.data)),
-            calculable: true,
-            orient: 'horizontal',
-            left: 'center',
-            bottom: '0%',
-            textStyle: {
-                color: '#ccc',
-                fontSize: 14
-            }
-        },
-        series: [{
-            name: '职位数量',
-            type: 'heatmap',
-            data: data.data.flatMap((sizeData, sizeIdx) =>
-                sizeData.data.map((value, expIdx) => [
-                    data.categories.exp[expIdx],
-                    data.categories.size[sizeIdx],
-                    value || 0
-                ])
-            ),
-            label: {
-                show: true,
-                color: '#fff',
-                fontSize: 14
-            }
-        }]
-    }));
+      },
+    ],
+  }));
 
-    // 4. 学历要求分布（环形图）
-    fetchAndSetChart(charts.education, '/api/education_distribution', (data) => ({
-        ...commonOptions,
-        title: {
-            text: '学历要求分布',
-            left: 'center'
-        },
-        legend: {
-            type: 'scroll',
-            orient: 'horizontal',
-            bottom: 10,
-            left: 'center',
-            pageButtonItemGap: 5,
-            pageButtonStyle: {
-                color: '#ccc'
-            },
-            pageTextStyle: {
-                color: '#ccc'
-            },
-            itemWidth: 12,
-            itemHeight: 12,
-            textStyle: {
-                color: '#ccc',
-                fontSize: 12
-            },
-            pageIconColor: '#3a6ff8',
-            pageIconInactiveColor: '#666'
-        },
-        series: [{
-            name: '学历要求',
-            type: 'pie',
-            radius: ['40%', '70%'],
-            center: ['40%', '50%'],
-            data: data,
-            itemStyle: {
-                borderRadius: 5,
-                borderColor: 'rgba(20, 25, 35, 0.8)',
-                borderWidth: 2
-            },
-            label: {
-                color: '#ccc',
-                fontSize: 14,
-                formatter: '{b}: {d}%'
-            },
-            labelLine: {
-                lineStyle: {
-                    color: '#999',
-                    width: 1
-                },
-                length: 10,
-                length2: 15
-            }
-        }]
-    }));
+  // 6. 队伍规模与击杀数分布
+  fetchAndSetChart(charts.partySizeKills, "/api/party-size-kills", (data) => {
+    const series = [];
+    const partyKeys = Object.keys(data);
 
-    // 5. 热门职位类型（折线图）
-    fetchAndSetChart(charts.positionType, '/api/position_type_count', (data) => {
-        const topData = data.sort((a, b) => b.value - a.value).slice(0, 10);
-        return {
-            ...commonOptions,
-            title: {
-                text: '热门职位类型分布',
-                left: 'center'
-            },
-            xAxis: {
-                type: 'category',
-                data: topData.map(item => item.name),
-                axisLabel: {
-                    rotate: 45,
-                    color: '#ccc',
-                    fontSize: 14
-                }
-            },
-            yAxis: {
-                type: 'value',
-                axisLabel: {
-                    color: '#ccc',
-                    fontSize: 14
-                }
-            },
-            series: [{
-                name: '职位数量',
-                data: topData.map(item => item.value),
-                type: 'line',
-                smooth: true,
-                symbol: 'circle',
-                symbolSize: 8,
-                lineStyle: {
-                    color: '#3ad1f8',
-                    width: 2
-                },
-                itemStyle: {
-                    color: '#3ad1f8'
-                },
-                areaStyle: {
-                    color: {
-                        type: 'linear',
-                        x: 0,
-                        y: 0,
-                        x2: 0,
-                        y2: 1,
-                        colorStops: [{
-                            offset: 0, color: 'rgba(58, 209, 248, 0.3)'
-                        }, {
-                            offset: 1, color: 'rgba(58, 209, 248, 0)'
-                        }]
-                    }
-                }
-            }]
-        };
+    partyKeys.forEach((key, index) => {
+      const partySize = key.replace("party_", "");
+      series.push({
+        name: `${partySize}人队伍`,
+        type: "bar",
+        data: data[key].map((item) => item.count),
+        itemStyle: {
+          color: ["#4ecdc4", "#667eea", "#ff6b6b", "#96ceb4"][index % 4],
+        },
+      });
     });
 
-    // 6. 热门行业分布（柱状图）
-    fetchAndSetChart(charts.industry, '/api/industry_count', (data) => {
-        const topData = data.sort((a, b) => b.value - a.value).slice(0, 10);
-        return {
-            ...commonOptions,
-            title: {
-                text: '热门行业分布',
-                left: 'center'
-            },
-            xAxis: {
-                type: 'category',
-                data: topData.map(item => item.name),
-                axisLabel: {
-                    rotate: 45,
-                    color: '#ccc',
-                    fontSize: 14
-                }
-            },
-            yAxis: {
-                type: 'value',
-                axisLabel: {
-                    color: '#ccc',
-                    fontSize: 14
-                }
-            },
-            series: [{
-                name: '职位数量',
-                data: topData.map(item => item.value),
-                type: 'bar',
-                barWidth: '60%',
-                itemStyle: {
-                    color: new echarts.graphic.LinearGradient(
-                        0, 0, 0, 1,
-                        [
-                            {offset: 0, color: '#3a6ff8'},
-                            {offset: 1, color: '#3ad1f8'}
-                        ]
-                    ),
-                    borderRadius: 6
-                },
-                label: {
-                    show: true,
-                    position: 'top',
-                    color: '#fff',
-                    fontSize: 14
-                }
-            }]
-        };
-    });
-
-    // 城市-省份映射表（简化版）
-    const cityToProvinceMap = {
-        // 华东地区
-        "上海": "上海",
-        "南京": "江苏",
-        "无锡": "江苏",
-        "苏州": "江苏",
-        "镇江": "江苏",
-        "杭州": "浙江",
-        "宁波": "浙江",
-        "合肥": "安徽",
-        "江阴市": "江苏",
-        "北京": "北京",
-        "广州": "广东",
-        "深圳": "广东",
+    return {
+      ...commonOptions,
+      title: {
+        text: "队伍规模与击杀数分布",
+        left: "center",
+      },
+      legend: {
+        data: series.map((s) => s.name),
+        textStyle: {
+          color: "#ccc",
+        },
+        top: "10%",
+      },
+      xAxis: {
+        type: "category",
+        data: data[partyKeys[0]].map((item) => item.kills),
+        axisLabel: {
+          color: "#ccc",
+          fontSize: 12,
+        },
+      },
+      yAxis: {
+        type: "value",
+        name: "数量",
+        axisLabel: {
+          color: "#ccc",
+          fontSize: 12,
+        },
+      },
+      series: series,
     };
+  });
 
-    // 7. 工作地点分布（地图）
-    fetchAndSetChart(charts.location, '/api/location_count', (data) => {
-        // 预加载地图数据
-        if (!echarts.getMap('china')) {
-            console.error('中国地图数据未加载，尝试动态加载...');
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/echarts@5.4.2/map/js/china.js';
-            script.onload = () => renderMapChart(processCityData(data));
-            document.body.appendChild(script);
+  // 7. 不同距离武器击杀统计
+  fetchAndSetChart(
+    charts.weaponDistance,
+    "/api/weapon-distance-analysis",
+    (data) => ({
+      ...commonOptions,
+      title: {
+        text: "不同距离武器击杀统计",
+        left: "center",
+      },
+      legend: {
+        data: ["Erangel狙击", "Erangel近战", "Miramar狙击", "Miramar近战"],
+        textStyle: {
+          color: "#ccc",
+        },
+        top: "10%",
+      },
+      xAxis: {
+        type: "category",
+        data: ["狙击武器(800-1500m)", "近战武器(<10m)"],
+        axisLabel: {
+          color: "#ccc",
+          fontSize: 12,
+        },
+      },
+      yAxis: {
+        type: "value",
+        name: "击杀数",
+        axisLabel: {
+          color: "#ccc",
+          fontSize: 12,
+        },
+      },
+      series: [
+        {
+          name: "Erangel狙击",
+          type: "bar",
+          data: [
+            Object.values(data.erangel.sniper).reduce((a, b) => a + b, 0),
+            0,
+          ],
+          itemStyle: { color: "#4ecdc4" },
+        },
+        {
+          name: "Erangel近战",
+          type: "bar",
+          data: [
+            0,
+            Object.values(data.erangel.melee).reduce((a, b) => a + b, 0),
+          ],
+          itemStyle: { color: "#667eea" },
+        },
+        {
+          name: "Miramar狙击",
+          type: "bar",
+          data: [
+            Object.values(data.miramar.sniper).reduce((a, b) => a + b, 0),
+            0,
+          ],
+          itemStyle: { color: "#ff6b6b" },
+        },
+        {
+          name: "Miramar近战",
+          type: "bar",
+          data: [
+            0,
+            Object.values(data.miramar.melee).reduce((a, b) => a + b, 0),
+          ],
+          itemStyle: { color: "#96ceb4" },
+        },
+      ],
+    })
+  );
 
-            return {
-                title: {
-                    text: '地图数据加载中...',
-                    left: 'center'
-                }
-            };
-        } else {
-            return renderMapChart(processCityData(data));
-        }
-    });
+  // 8. 交互式武器分析
+  fetchAndSetChart(
+    charts.interactiveWeapon,
+    "/api/interactive-weapon-analysis",
+    (data) => ({
+      ...commonOptions,
+      title: {
+        text: "交互式武器分析 - 武器与击杀距离关系",
+        left: "center",
+      },
+      legend: {
+        data: ["Erangel", "Miramar"],
+        textStyle: {
+          color: "#ccc",
+        },
+        top: "10%",
+      },
+      xAxis: {
+        type: "value",
+        name: "击杀距离 (米)",
+        axisLabel: {
+          color: "#ccc",
+          fontSize: 12,
+        },
+      },
+      yAxis: {
+        type: "category",
+        data: [...new Set([...data.erangel.weapons, ...data.miramar.weapons])],
+        axisLabel: {
+          color: "#ccc",
+          fontSize: 10,
+        },
+      },
+      series: [
+        {
+          name: "Erangel",
+          type: "scatter",
+          data: data.erangel.data.map((item) => [
+            item.distance,
+            item.killed_by,
+          ]),
+          itemStyle: {
+            color: "#4ecdc4",
+            opacity: 0.7,
+          },
+          symbolSize: 8,
+        },
+        {
+          name: "Miramar",
+          type: "scatter",
+          data: data.miramar.data.map((item) => [
+            item.distance,
+            item.killed_by,
+          ]),
+          itemStyle: {
+            color: "#ff6b6b",
+            opacity: 0.7,
+          },
+          symbolSize: 8,
+        },
+      ],
+    })
+  );
 
-    // 数据预处理函数：将市级数据转换为省级数据
-    function processCityData(cityData) {
-        // 创建省份数据容器
-        const provinceData = {};
+  // PUBG吃鸡概率预测功能
+  const predictionForm = document.getElementById("predictionForm");
+  const predictionResult = document.getElementById("predictionResult");
 
-        // 遍历市级数据，聚合到省份
-        cityData.forEach(cityItem => {
-            const cityName = cityItem.name;
-            const cityValue = cityItem.value;
+  if (predictionForm) {
+    predictionForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
 
-            // 从映射表中查找对应的省份
-            const provinceName = cityToProvinceMap[cityName];
+      // 获取表单数据
+      const formData = new FormData(predictionForm);
+      const data = {};
+      for (let [key, value] of formData.entries()) {
+        data[key] = parseFloat(value);
+      }
 
-            if (provinceName) {
-                // 如果该省份已存在，累加值；否则初始化
-                if (provinceData[provinceName]) {
-                    provinceData[provinceName] += cityValue;
-                } else {
-                    provinceData[provinceName] = cityValue;
-                }
-            } else {
-                console.warn(`未找到城市 "${cityName}" 的省份映射`);
-            }
+      console.log("发送预测请求:", data);
+
+      // 显示加载状态
+      updatePredictionResult("loading");
+
+      try {
+        const response = await fetch("/api/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
         });
 
-        // 将对象转换为ECharts需要的数组格式
-        return Object.keys(provinceData).map(provinceName => ({
-            name: provinceName,
-            value: provinceData[provinceName]
-        }));
-    }
+        const result = await response.json();
+        console.log("预测结果:", result);
 
-    // 地图渲染函数
-    function renderMapChart(data) {
-        return {
-            ...commonOptions,
-            title: {
-                text: '工作地点分布',
-                subtext: '按省份职位数量',
-                left: 'center'
-            },
-            visualMap: {
-                min: 0,
-                max: Math.max(...data.map(item => item.value)),
-                calculable: true,
-                orient: 'horizontal',
-                left: 'center',
-                bottom: '10%',
-                textStyle: {
-                    color: '#ccc',
-                    fontSize: 14
-                },
-                inRange: {
-                    color: ['#e0ecff', '#91bfdb', '#43a2ca', '#0868ac']
-                }
-            },
-            series: [{
-                name: '职位数量',
-                type: 'map',
-                mapType: 'china',
-                roam: true,
-                zoom: 1.2,
-                label: {
-                    show: true,
-                    color: '#ccc',
-                    fontSize: 12
-                },
-                itemStyle: {
-                    normal: {
-                        borderColor: 'rgba(255,255,255,0.2)',
-                        borderWidth: 1
-                    },
-                    emphasis: {
-                        areaColor: '#3a6ff8',
-                        shadowBlur: 20,
-                        shadowColor: 'rgba(0, 0, 0, 0.5)'
-                    }
-                },
-                data: data
-            }]
-        };
-    }
-
-    // 响应窗口大小变化
-    window.addEventListener('resize', function () {
-        Object.values(charts).forEach(chart => chart.resize());
+        if (response.ok) {
+          updatePredictionResult("success", result);
+        } else {
+          updatePredictionResult("error", result);
+        }
+      } catch (error) {
+        console.error("预测请求失败:", error);
+        updatePredictionResult("error", {
+          error: "网络请求失败，请检查连接",
+        });
+      }
     });
+  }
+
+  function updatePredictionResult(status, data = null) {
+    const percentageElement = predictionResult.querySelector(".percentage");
+    const confidenceElement =
+      predictionResult.querySelector(".confidence-value");
+    const tipsElement = predictionResult.querySelector(".prediction-tips p");
+    const circleProgress = predictionResult.querySelector(".circle-progress");
+
+    switch (status) {
+      case "loading":
+        percentageElement.textContent = "...";
+        confidenceElement.textContent = "计算中";
+        confidenceElement.className = "confidence-value";
+        tipsElement.textContent = "正在使用AI模型分析您的游戏数据...";
+        circleProgress.style.background =
+          "conic-gradient(#667eea 0deg, #667eea 90deg, rgba(255, 255, 255, 0.1) 90deg)";
+        break;
+
+      case "success":
+        const percentage = data.percentage;
+        const probability = data.probability;
+        const confidence = data.confidence;
+
+        percentageElement.textContent = `${percentage}%`;
+        confidenceElement.textContent = confidence;
+        confidenceElement.className = `confidence-value ${confidence}`;
+
+        // 更新圆形进度条
+        const degrees = percentage * 3.6; // 转换为角度
+        let color = "#4ecdc4"; // 默认绿色
+        if (percentage < 30) {
+          color = "#ff6b6b"; // 红色
+        } else if (percentage < 60) {
+          color = "#667eea"; // 蓝色
+        }
+
+        circleProgress.style.background = `conic-gradient(${color} 0deg, ${color} ${degrees}deg, rgba(255, 255, 255, 0.1) ${degrees}deg)`;
+
+        // 更新提示信息
+        let tips = "";
+        if (percentage >= 70) {
+          tips = "🎉 恭喜！您有很高的吃鸡概率！保持当前策略，稳扎稳打！";
+        } else if (percentage >= 50) {
+          tips = "💪 不错的表现！继续提升击杀数和生存时间，胜利在望！";
+        } else if (percentage >= 30) {
+          tips = "⚡ 还有提升空间！尝试更积极的游戏策略，增加击杀和伤害输出。";
+        } else {
+          tips = "🎯 需要调整策略！建议提高生存时间，寻找更好的装备和位置。";
+        }
+        tipsElement.textContent = tips;
+        break;
+
+      case "error":
+        percentageElement.textContent = "错误";
+        confidenceElement.textContent = "失败";
+        confidenceElement.className = "confidence-value medium";
+        tipsElement.textContent = `预测失败: ${data.error || "未知错误"}`;
+        circleProgress.style.background =
+          "conic-gradient(#ff6b6b 0deg, #ff6b6b 90deg, rgba(255, 255, 255, 0.1) 90deg)";
+        break;
+    }
+  }
+
+  // 窗口大小改变时重新调整图表
+  window.addEventListener("resize", function () {
+    Object.values(charts).forEach((chart) => {
+      chart.resize();
+    });
+  });
 });
