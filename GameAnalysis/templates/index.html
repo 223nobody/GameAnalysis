@@ -1,0 +1,29 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Job 数据可视化</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Flask Job 招聘数据可视化系统</h1>
+        <div class="nav">
+            <a href="/" class="active">首页</a>
+            <a href="/charts">数据图表</a>
+        </div>
+        <div class="intro">
+            <p>本系统基于真实招聘数据，为您提供全面的招聘数据分析，涵盖以下关键维度：</p>
+            <ul>
+                <li><strong>薪资水平对比</strong>：通过箱线图直观展示合肥、广州、镇江等地的薪资分布情况。</li>
+                <li><strong>学历要求分布</strong>：利用环形图清晰呈现不同学历要求在招聘中的占比。</li>
+                <li><strong>企业规模与经验关系</strong>：以热力图形式展示不同规模企业对工作经验的要求差异。</li>
+                <li><strong>职位类型流向</strong>：借助桑基图深入剖析城市、职位类型与行业之间的关联。</li>
+            </ul>
+            <a href="/charts" class="btn">立即查看详细图表</a>
+        </div>
+    </div>
+</body>
+</html>

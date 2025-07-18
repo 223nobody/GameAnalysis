@@ -1,0 +1,167 @@
+/* 基础样式 */
+body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #e0e0e0;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 容器样式 */
+.container {
+    max-width: 1920px; /* 适配大屏 */
+    width: 95%;
+    margin: 40px auto;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    padding: 32px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* 标题样式 */
+h1 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* 导航栏样式 */
+.nav {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.nav a {
+    text-decoration: none;
+    color: #b0b0b0;
+    padding: 12px 32px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-size: 18px;
+    background-color: rgba(30, 35, 45, 0.8);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.nav a:hover {
+    color: #fff;
+    background-color: rgba(100, 120, 180, 0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(100, 120, 180, 0.3);
+}
+
+.nav a.active {
+    color: #fff;
+    background-color: #3a6ff8;
+    box-shadow: 0 8px 24px rgba(58, 111, 248, 0.4);
+}
+
+/* 图表容器布局：第一行3个，第二行4个 */
+.chart-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* 减小图与图之间的间隔 */
+    margin-bottom: 32px;
+    justify-content: center;
+}
+
+/* 第一行样式（3个图表） */
+.row1 .chart-box {
+    flex: 1 1 calc(33.333% - 13.33px); /* 根据新的 gap 值调整 */
+}
+
+/* 第二行样式（4个图表） */
+.row2 .chart-box {
+    flex: 1 1 calc(25% - 15px); /* 根据新的 gap 值调整 */
+}
+
+/* 图表盒子本身 */
+.chart-box {
+    background-color: rgba(20, 25, 35, 0.9);
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    padding: 24px;
+    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 2px solid rgba(100, 120, 150, 0.2);
+    height: 450px; /* 统一高度 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chart-box:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+    border-color: rgba(100, 120, 150, 0.6);
+}
+
+/* 特殊处理地图图表的高度，调整为与 .chart-box 一致 */
+#locationChart {
+    height: 450px;
+}
+
+/* 城市 - 职位类型 - 行业关联图所在块样式 */
+#cityJobIndustryChart {
+    flex: 1 1 calc(70% - 10px); /* 进一步增加宽度 */
+    transition: all 0.5s ease; /* 延长过渡时间，使效果更明显 */
+    background-color: rgba(20, 25, 35, 0.9); /* 添加背景色，方便观察效果 */
+}
+
+#cityJobIndustryChart:hover {
+    transform: scale(1.08); /* 增大鼠标悬停时的放大比例 */
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.5); /* 增强阴影效果 */
+    border-color: rgba(100, 120, 150, 0.8); /* 加深边框颜色 */
+    background-color: rgba(30, 35, 45, 0.9); /* 悬停时背景颜色加深 */
+}
+
+/* 响应式适配 */
+@media (max-width: 1200px) {
+    .row1 .chart-box,
+    .row2 .chart-box,
+    #cityJobIndustryChart {
+        flex: 1 1 calc(50% - 10px); /* 根据新的 gap 值调整 */
+    }
+}
+
+@media (max-width: 768px) {
+    .row1 .chart-box,
+    .row2 .chart-box,
+    #cityJobIndustryChart {
+        flex: 1 1 100%; /* 移动设备：每行1个 */
+        height: 380px; /* 减小移动设备上的高度 */
+    }
+
+    #locationChart {
+        height: 380px; /* 地图图表在移动设备上的高度 */
+    }
+}
+
+/* 滚动条（可选） */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(100, 120, 150, 0.5);
+    border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 120, 150, 0.7);
+}
