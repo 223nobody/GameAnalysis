@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PUBG 吃鸡概率预测器</title>
+    <style>
+      body {
+        font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+        color: #e0e0e0;
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 96%;
+      }
+      .container {
+        padding: 2rem;
+        width: 100%;
+        max-width: 500px;
+        margin: 40px auto;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(12px);
+        box-sizing: border-box;
+        text-align: center;
+      }
+      h1 {
+        text-align: center;
+        color: #22d3ee;
+        margin-bottom: 1.5rem;
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 1rem;
+      }
+      button {
+        width: 100%;
+        padding: 0.8rem;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #result {
+        margin-top: 1.5rem;
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #28a745;
+        height: 2rem;
+      }
+      /* 导航栏样式已在外部CSS中统一定义 */
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="nav">
+        <a href="/">首页</a>
+        <a href="/predict" class="active">预测器</a>
+        <a href="/history">历史记录</a>
+      </div>
+      <h1>PUBG 吃鸡概率预测器 🐔</h1>
+      <form id="prediction-form">
+        <div class="form-group">
+          <label for="match_mode">比赛模式</label>
+          <select id="match_mode" name="match_mode" required>
+            <option value="squad-fpp">四排 (Squad-FPP)</option>
+            <option value="duo-fpp">双排 (Duo-FPP)</option>
+            <option value="solo-fpp">单排 (Solo-FPP)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="game_size">游戏总人数</label
+          ><input
+            type="number"
+            id="game_size"
+            name="game_size"
+            value="98"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="party_size">队伍规模</label
+          ><input
+            type="number"
+            id="party_size"
+            name="party_size"
+            value="4"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="player_kills">击杀数</label
+          ><input
+            type="number"
+            id="player_kills"
+            name="player_kills"
+            value="2"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="player_dmg">造成伤害</label
+          ><input
+            type="number"
+            id="player_dmg"
+            name="player_dmg"
+            value="250"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="player_dbno">击倒数</label
+          ><input
+            type="number"
+            id="player_dbno"
+            name="player_dbno"
+            value="1"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="player_assists">助攻数</label
+          ><input
+            type="number"
+            id="player_assists"
+            name="player_assists"
+            value="1"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="player_survive_time">生存时间 (秒)</label
+          ><input
+            type="number"
+            step="any"
+            id="player_survive_time"
+            name="player_survive_time"
+            value="1500"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="player_dist_walk">步行距离 (米)</label
+          ><input
+            type="number"
+            step="any"
+            id="player_dist_walk"
+            name="player_dist_walk"
+            value="2000"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="player_dist_ride">载具行驶距离 (米)</label
+          ><input
+            type="number"
+            step="any"
+            id="player_dist_ride"
+            name="player_dist_ride"
+            value="1000"
+            required
+          />
+        </div>
+
+        <button type="submit">开始预测</button>
+      </form>
+      <div id="result"></div>
+    </div>
+
+    <script>
+      // 监听表单的提交事件
+      document
+        .getElementById("prediction-form")
+        .addEventListener("submit", function (event) {
+          // 阻止表单的默认提交行为（防止页面刷新）
+          event.preventDefault();
+
+          // 获取表单数据
+          const formData = new FormData(this);
+          const data = Object.fromEntries(formData.entries());
+
+          // 将结果区域清空并显示加载状态
+          const resultDiv = document.getElementById("result");
+          resultDiv.textContent = "正在计算...";
+
+          // 使用 fetch API 将数据以 POST 请求发送到 Flask 后端
+          fetch("/api/predict", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json()) // 将返回的响应解析为 JSON
+            .then((result) => {
+              // 处理后端返回的结果
+              if (result.error) {
+                resultDiv.style.color = "red";
+                resultDiv.textContent = "错误: " + result.error;
+              } else {
+                const probability = (result.probability * 100).toFixed(2);
+                resultDiv.style.color = "#28a745";
+                resultDiv.textContent = `本场吃鸡概率: ${probability}%`;
+              }
+            })
+            .catch((error) => {
+              // 处理网络请求错误
+              console.error("Error:", error);
+              resultDiv.style.color = "red";
+              resultDiv.textContent = "请求失败，请检查后端服务是否开启。";
+            });
+        });
+    </script>
+  </body>
+</html>

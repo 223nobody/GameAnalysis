@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PUBG游戏数据可视化分析</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>PUBG游戏数据可视化分析 - 深度洞察游戏策略</h1>
+      <div class="nav">
+        <a href="/" class="active">首页</a>
+        <a href="/predict">预测器</a>
+        <a href="/history">历史记录</a>
+      </div>
+
+      <!-- 第一行：基础概率分析图表 -->
+      <div class="chart-container row1">
+        <div id="killWinRateChart" class="chart-box">
+          <p>击杀人数与吃鸡概率关系</p>
+        </div>
+        <div id="assistWinRateChart" class="chart-box">
+          <p>助攻次数与吃鸡概率关系</p>
+        </div>
+        <div id="vehicleDistanceChart" class="chart-box">
+          <p>搭乘车辆里程与吃鸡概率</p>
+        </div>
+      </div>
+
+      <!-- 第二行：队伍和距离分析 -->
+      <div class="chart-container row2">
+        <div id="partySizeKillsChart" class="chart-box2">
+          <p>队伍规模与击杀数分布</p>
+        </div>
+        <div id="killDistanceChart" class="chart-box2">
+          <p>击杀距离分布</p>
+        </div>
+      </div>
+
+      <!-- 第三行：武器分析 -->
+      <div class="chart-container row3">
+        <div id="weaponKillsChart" class="chart-box2">
+          <p>武器击杀统计对比</p>
+        </div>
+        <div id="weaponDistanceChart" class="chart-box2">
+          <p>不同距离武器击杀统计</p>
+        </div>
+      </div>
+
+      <!-- 第四行：热力图分析 -->
+      <div class="chart-container row4">
+        <div class="chart-box3 heatmap-container">
+          <h3 class="heatmap-title">玩家死亡位置分布热力图</h3>
+          <div class="heatmap-image-wrapper">
+            <img
+              src="/data/heatmap1.png"
+              alt="玩家死亡位置分布热力图"
+              class="heatmap-image"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            <div class="heatmap-placeholder" style="display: none">
+              <div class="placeholder-content">
+                <i class="placeholder-icon">📊</i>
+                <p>热力图加载失败</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-box3 heatmap-container">
+          <h3 class="heatmap-title">PUBG决赛圈位置分布热力图</h3>
+          <div class="heatmap-image-wrapper">
+            <img
+              src="/data/heatmap2.png"
+              alt="PUBG决赛圈位置分布热力图"
+              class="heatmap-image"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            <div class="heatmap-placeholder" style="display: none">
+              <div class="placeholder-content">
+                <i class="placeholder-icon">📊</i>
+                <p>热力图加载失败</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第五行：交互式武器分析 -->
+      <div class="chart-container row5">
+        <div id="interactiveWeaponChart" class="chart-box large-chart">
+          <p>交互式武器分析</p>
+        </div>
+      </div>
+
+      <!-- 第六行：PUBG吃鸡概率预测器 -->
+      <div class="chart-container row6">
+        <div class="predictor-container">
+          <h2>🎯 PUBG吃鸡概率预测器</h2>
+          <div class="predictor-content">
+            <div class="input-section">
+              <h3>输入游戏参数</h3>
+              <form id="predictionForm">
+                <div class="input-group">
+                  <div class="input-item">
+                    <label for="game_size">游戏总人数:</label>
+                    <input
+                      type="number"
+                      id="game_size"
+                      name="game_size"
+                      value="100"
+                      min="50"
+                      max="100"
+                      required
+                    />
+                  </div>
+                  <div class="input-item">
+                    <label for="party_size">队伍规模:</label>
+                    <select id="party_size" name="party_size" required>
+                      <option value="1">单人</option>
+                      <option value="2" selected>双人</option>
+                      <option value="3">三人</option>
+                      <option value="4">四人</option>
+                    </select>
+                  </div>
+                  <div class="input-item">
+                    <label for="player_kills">击杀数:</label>
+                    <input
+                      type="number"
+                      id="player_kills"
+                      name="player_kills"
+                      value="3"
+                      min="0"
+                      max="50"
+                      required
+                    />
+                  </div>
+                  <div class="input-item">
+                    <label for="player_dmg">造成伤害:</label>
+                    <input
+                      type="number"
+                      id="player_dmg"
+                      name="player_dmg"
+                      value="500"
+                      min="0"
+                      max="10000"
+                      required
+                    />
+                  </div>
+                  <div class="input-item">
+                    <label for="player_dbno">击倒数:</label>
+                    <input
+                      type="number"
+                      id="player_dbno"
+                      name="player_dbno"
+                      value="2"
+                      min="0"
+                      max="50"
+                      required
+                    />
+                  </div>
+                  <div class="input-item">
+                    <label for="player_assists">助攻数:</label>
+                    <input
+                      type="number"
+                      id="player_assists"
+                      name="player_assists"
+                      value="1"
+                      min="0"
+                      max="20"
+                      required
+                    />
+                  </div>
+                  <div class="input-item">
+                    <label for="player_survive_time">生存时间(秒):</label>
+                    <input
+                      type="number"
+                      id="player_survive_time"
+                      name="player_survive_time"
+                      value="1800"
+                      min="0"
+                      max="3600"
+                      required
+                    />
+                  </div>
+                  <div class="input-item">
+                    <label for="player_dist_walk">步行距离(米):</label>
+                    <input
+                      type="number"
+                      id="player_dist_walk"
+                      name="player_dist_walk"
+                      value="2000"
+                      min="0"
+                      max="20000"
+                      required
+                    />
+                  </div>
+                  <div class="input-item">
+                    <label for="player_dist_ride">载具距离(米):</label>
+                    <input
+                      type="number"
+                      id="player_dist_ride"
+                      name="player_dist_ride"
+                      value="1000"
+                      min="0"
+                      max="20000"
+                      required
+                    />
+                  </div>
+                </div>
+                <button type="submit" class="predict-btn">
+                  🔮 预测吃鸡概率
+                </button>
+              </form>
+            </div>
+
+            <div class="result-section">
+              <h3>预测结果</h3>
+              <div id="predictionResult" class="result-display">
+                <div class="probability-circle">
+                  <div class="circle-progress">
+                    <span class="percentage">--</span>
+                  </div>
+                </div>
+                <div class="result-details">
+                  <div class="confidence-indicator">
+                    <span class="confidence-label">置信度:</span>
+                    <span class="confidence-value">--</span>
+                  </div>
+                  <div class="prediction-tips">
+                    <p>输入您的游戏数据，获取AI预测的吃鸡概率！</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI建议生成部分 - 独立显示区域 -->
+      <div class="chart-container advice-container">
+        <div class="advice-section">
+          <h3>🎯 AI游戏建议</h3>
+          <div class="advice-controls">
+            <button id="generateAdviceBtn" class="advice-btn">
+              <span class="btn-text">获取专业建议</span>
+              <span class="btn-loading" style="display: none">生成中...</span>
+            </button>
+          </div>
+          <div id="adviceResult" class="advice-display" style="display: none">
+            <div class="advice-content">
+              <div class="advice-text"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+  </body>
+</html>
